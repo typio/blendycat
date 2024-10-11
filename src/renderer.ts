@@ -11,13 +11,18 @@ class Camera {
   fov: number;
   near: number;
   far: number;
-  spherical: Vec3;
+  spherical: Vec3 = new Vec3();
 
   private canvas: HTMLCanvasElement;
   private lastMouse: { x: number; y: number };
   private clicked: boolean;
 
-  constructor(canvas, aspect, initialPosition?: Vec3, initialTarget?: Vec3) {
+  constructor(
+    canvas: HTMLCanvasElement,
+    aspect: number,
+    initialPosition?: Vec3,
+    initialTarget?: Vec3,
+  ) {
     this.p = Vec3.fromValues(0, 0, 0);
     this.target = Vec3.fromValues(0, 0, 0);
     this.up = Vec3.fromValues(0, 1, 0);
@@ -184,7 +189,7 @@ class Camera {
       projectionMatrix,
       viewMatrix,
     );
-    return viewProjectionMatrix;
+    return viewProjectionMatrix as Mat4;
   }
 }
 
@@ -279,7 +284,7 @@ export default class Renderer {
     window.addEventListener("resize", this.resize);
   }
 
-  render = (timeElapsed: number, scene: Scene) => {
+  render = (_timeElapsed: number, scene: Scene) => {
     const uniformBufferSize = 16 * 4 + (3 * 4 + 4) + (3 * 4 + 4);
     const uniformBuffer = this.device!.createBuffer({
       size: uniformBufferSize,
@@ -298,6 +303,7 @@ export default class Renderer {
     });
 
     scene.objects.forEach((obj, i) => {
+      if (!obj.data) return;
       const { vertexData, indexData } = obj.data;
 
       const vertexBuffer = this.device!.createBuffer({
@@ -477,7 +483,7 @@ export default class Renderer {
     const pass = encoder.beginRenderPass(renderPassDescriptor);
     pass.setPipeline(pipeline);
     pass.setBindGroup(0, bindGroup);
-    scene.objects.forEach((obj, i) => {
+    scene.objects.forEach((_, i) => {
       pass.setVertexBuffer(0, this.vertexBuffers[i]);
       pass.setVertexBuffer(1, instanceBuffer);
       pass.setIndexBuffer(this.indexBuffers[i], "uint32");

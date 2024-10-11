@@ -4,7 +4,7 @@ import Scene, { Sphere } from "./scene";
 export default class Modeler {
   private g = -9.8;
   private cR = 0.8;
-  private mu = 0.98;
+  // private mu = 0.98;
 
   step = (scene: Scene, dt: number) => {
     const sphere = scene.objects[1] as Sphere;
