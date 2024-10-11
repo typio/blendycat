@@ -17,7 +17,7 @@ class Camera {
   private lastMouse: { x: number; y: number };
   private clicked: boolean;
 
-  constructor(canvas, aspect) {
+  constructor(canvas, aspect, initialPosition?: Vec3, initialTarget?: Vec3) {
     this.p = Vec3.fromValues(0, 0, 0);
     this.target = Vec3.fromValues(0, 0, 0);
     this.up = Vec3.fromValues(0, 1, 0);
@@ -26,13 +26,37 @@ class Camera {
     this.near = 0.1;
     this.far = 100;
 
-    this.spherical = Vec3.fromValues(15, Math.PI / 4, Math.PI / 2);
+    this.target = initialTarget
+      ? Vec3.clone(initialTarget)
+      : Vec3.fromValues(0, 0, 0);
+    this.p = initialPosition
+      ? Vec3.clone(initialPosition)
+      : Vec3.fromValues(0, 0, 15);
+
+    this.calculateSphericalCoordinates();
 
     this.canvas = canvas;
     this.lastMouse = { x: 0, y: 0 };
     this.clicked = false;
 
     this.setupEventListeners();
+    this.updatePosition();
+  }
+
+  calculateSphericalCoordinates() {
+    const diff = Vec3.sub(Vec3.create(), this.p, this.target);
+    const r = Vec3.length(diff);
+    const theta = Math.atan2(diff[2], diff[0]);
+    const phi = Math.acos(diff[1] / r);
+    this.spherical = Vec3.fromValues(r, theta, phi);
+  }
+
+  setPosition(position: Vec3, target?: Vec3) {
+    Vec3.copy(this.p, position);
+    if (target) {
+      Vec3.copy(this.target, target);
+    }
+    this.calculateSphericalCoordinates();
     this.updatePosition();
   }
 
@@ -91,7 +115,6 @@ class Camera {
       }
     });
 
-    // Add zoom functionality with mouse wheel
     this.canvas.addEventListener("wheel", (e) => {
       this.zoom(e.deltaY);
       e.preventDefault();
@@ -200,6 +223,7 @@ export default class Renderer {
     this.camera = new Camera(
       this.canvas,
       this.canvas.width / this.canvas.height,
+      new Vec3(8, 5, 14),
     );
     this.light = new Light();
   }
@@ -323,7 +347,7 @@ export default class Renderer {
           @builtin(position) p: vec4f,
           @location(0) worldP: vec3f,
           @location(1) normal: vec3f,
-          @location(2) @interpolate(linear) color: vec3f
+          @location(2) @interpolate(flat) color: vec3f
         };
 
         @vertex fn vs(input: VertexInput) -> VertexOutput {

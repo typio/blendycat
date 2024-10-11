@@ -1,8 +1,9 @@
 import { Vec3 } from "gl-matrix";
 
-export enum PrimitiveObject {
+export enum ObjectKind {
   Box,
   Sphere,
+  Model,
 }
 
 interface CommonObjectProps {
@@ -15,34 +16,43 @@ interface CommonObjectProps {
 }
 
 export interface Box extends CommonObjectProps {
-  kind: PrimitiveObject.Box;
+  kind: ObjectKind.Box;
   length: number;
   width: number;
   height: number;
 }
 
 export interface Sphere extends CommonObjectProps {
-  kind: PrimitiveObject.Sphere;
+  kind: ObjectKind.Sphere;
   radius: number;
   hPrec: number;
   vPrec: number;
 }
 
-export default class Scene {
-  objects: (Box | Sphere)[] = [];
+export interface Model extends CommonObjectProps {
+  kind: ObjectKind.Model;
+  filepath: string;
+}
 
-  constructor(objects: (Box | Sphere)[]) {
+export default class Scene {
+  objects: (Box | Sphere | Model)[] = [];
+
+  constructor(objects: (Box | Sphere | Model)[]) {
     this.objects = objects;
   }
 
-  getVertices = () => {
+  getVertices = async () => {
     for (const obj of this.objects) {
       switch (obj.kind) {
-        case PrimitiveObject.Box:
+        case ObjectKind.Box:
           obj.data = createBoxVertices(obj);
           break;
-        case PrimitiveObject.Sphere:
+        case ObjectKind.Sphere:
           obj.data = createSphereVertices(obj);
+          break;
+        case ObjectKind.Model:
+          let content = await fetch("teapot.obj").then((res) => res.text());
+          obj.data = createObjModelVertices(content);
           break;
       }
     }
@@ -196,6 +206,37 @@ const createSphereVertices = (sphere: Sphere) => {
     );
     iI += 3;
   }
+
+  return { vertexData, indexData };
+};
+
+const createObjModelVertices = (content: string) => {
+  const lines = content.split("\n");
+
+  let verts = [];
+  let idx = [];
+
+  for (const line of lines) {
+    let [command, ...values] = line.split(" ");
+    if (command == "v") {
+      let vs = [...values.map((v) => Number(v))];
+      verts.push(
+        ...vs,
+        ...new Vec3(...vs).normalize(),
+        Math.random(),
+        Math.random(),
+        Math.random(),
+      );
+    } else if (command == "f") {
+      let vs = [...values.map((v) => Number(v) - 1)];
+      idx.push(...vs);
+    }
+  }
+
+  const vertexData = new Float32Array(verts);
+  const indexData = new Uint32Array(idx);
+
+  console.log({ vertexData, indexData });
 
   return { vertexData, indexData };
 };

@@ -1,7 +1,7 @@
 import "./style.css";
 import Renderer from "./renderer";
 import Modeler from "./modeler";
-import Scene, { PrimitiveObject } from "./scene";
+import Scene, { ObjectKind } from "./scene";
 import { Vec3 } from "gl-matrix";
 
 const canvas = document.createElement("canvas");
@@ -10,9 +10,9 @@ document.querySelector<HTMLDivElement>("#app")!.appendChild(canvas);
 const main = async () => {
   const scene = new Scene([
     {
-      kind: PrimitiveObject.Box,
-      length: 5,
-      width: 5,
+      kind: ObjectKind.Box,
+      length: 15,
+      width: 15,
       height: 0.1,
 
       color: { r: 155, g: 10, b: 15 },
@@ -21,13 +21,22 @@ const main = async () => {
       a: new Vec3(0, 0, 0),
     },
     {
-      kind: PrimitiveObject.Sphere,
+      kind: ObjectKind.Sphere,
       radius: 1,
       hPrec: 50,
       vPrec: 50,
 
       color: { r: 5, g: 10, b: 200 },
       p: new Vec3(0, 5, 0),
+      v: new Vec3(0, 0, 0),
+      a: new Vec3(0, 0, 0),
+    },
+    {
+      kind: ObjectKind.Model,
+      filepath: "teapot.obj",
+
+      color: { r: 5, g: 10, b: 200 },
+      p: new Vec3(-2, 0, 5),
       v: new Vec3(0, 0, 0),
       a: new Vec3(0, 0, 0),
     },
@@ -38,7 +47,7 @@ const main = async () => {
     const renderer = new Renderer(canvas);
     await renderer.init();
 
-    scene.getVertices();
+    await scene.getVertices();
 
     const triangleCount = document.createElement("p");
     let triangleCountNumber = 0;

@@ -18,7 +18,6 @@ export default class Modeler {
     Vec3.scaleAndAdd(sphere.p, sphere.p, sphere.v, dt);
 
     if (sphere.p.y < collisionY) {
-      // Bounce
       sphere.p.y = collisionY;
       sphere.v.y = -sphere.v.y * this.cR;
     }
