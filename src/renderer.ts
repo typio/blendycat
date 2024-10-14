@@ -1,6 +1,5 @@
 import Scene from "./scene";
-import { Mat4 } from "../node_modules/gl-matrix/dist/esm/f64/mat4.js";
-import { Vec3 } from "../node_modules/gl-matrix/dist/esm/f64/vec3.js";
+import { Mat4, Vec3 } from "gl-matrix";
 
 const wgsl = String.raw;
 
@@ -293,7 +292,7 @@ export default class Renderer {
     });
 
     const uniformData = new Float32Array(uniformBufferSize / 4);
-    uniformData.set(this.camera.getViewProjectionMatrix() as Float64Array, 0);
+    uniformData.set(this.camera.getViewProjectionMatrix() as Float32Array, 0);
     uniformData.set(this.camera.p, 16);
     uniformData.set(this.light.p, 20);
     this.device!.queue.writeBuffer(uniformBuffer, 0, uniformData);

@@ -1,5 +1,4 @@
-import { Vec2 } from "../node_modules/gl-matrix/dist/esm/f64/vec2.js";
-import { Vec3 } from "../node_modules/gl-matrix/dist/esm/f64/vec3.js";
+import { Vec3, Vec2 } from "gl-matrix";
 import { Box, Cloth, Sphere } from "./scene";
 
 export default class Modeler {

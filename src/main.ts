@@ -2,8 +2,7 @@ import "./style.css";
 import Renderer from "./renderer";
 import Modeler from "./modeler";
 import Scene, { ObjectKind, Cloth, Sphere, Box } from "./scene";
-import { Vec2 } from "../node_modules/gl-matrix/dist/esm/f64/vec2.js";
-import { Vec3 } from "../node_modules/gl-matrix/dist/esm/f64/vec3.js";
+import { Vec3, Vec2 } from "gl-matrix";
 
 const canvas = document.createElement("canvas");
 document.querySelector<HTMLDivElement>("#app")!.appendChild(canvas);
