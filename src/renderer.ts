@@ -1,5 +1,6 @@
 import Scene from "./scene";
-import { Mat4, Vec3 } from "gl-matrix";
+import { Mat4 } from "../node_modules/gl-matrix/dist/esm/f64/mat4.js";
+import { Vec3 } from "../node_modules/gl-matrix/dist/esm/f64/vec3.js";
 
 const wgsl = String.raw;
 
@@ -228,7 +229,7 @@ export default class Renderer {
     this.camera = new Camera(
       this.canvas,
       this.canvas.width / this.canvas.height,
-      new Vec3(8, 5, 14),
+      new Vec3(0, 9, 9),
     );
     this.light = new Light();
   }
@@ -292,7 +293,7 @@ export default class Renderer {
     });
 
     const uniformData = new Float32Array(uniformBufferSize / 4);
-    uniformData.set(this.camera.getViewProjectionMatrix() as Float32Array, 0);
+    uniformData.set(this.camera.getViewProjectionMatrix() as Float64Array, 0);
     uniformData.set(this.camera.p, 16);
     uniformData.set(this.light.p, 20);
     this.device!.queue.writeBuffer(uniformBuffer, 0, uniformData);
@@ -343,6 +344,7 @@ export default class Renderer {
         };
 
         struct VertexInput {
+          @builtin(vertex_index) vI: u32,
           @location(0) p: vec3f,
           @location(1) normal: vec3f,
           @location(2) color: vec3f,
@@ -358,7 +360,9 @@ export default class Renderer {
 
         @vertex fn vs(input: VertexInput) -> VertexOutput {
           var output: VertexOutput;
-          let worldP = input.p + input.instanceP;
+          var worldP = input.p + input.instanceP;  
+          // stop clipping when folded over in Y
+          worldP.y = worldP.y - f32(input.vI) * 0.000001;
           output.p = uniforms.viewProjectionMatrix * vec4f(worldP, 1.0);
           output.worldP = worldP;
           output.normal = input.normal;
@@ -442,7 +446,7 @@ export default class Renderer {
       },
       primitive: {
         topology: "triangle-list",
-        cullMode: "back",
+        cullMode: "none", // 'back',
         frontFace: "ccw",
       },
       depthStencil: {
